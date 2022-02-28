@@ -1,12 +1,31 @@
 const router = require("express").Router();
 const {
     create,
-    index
+    list,
+    update,
+    remove,
+    detail,
+    // search
 } = require("../controllers/characters");
-const characterCreate = require("../validations/charactersCreate");
+const charactersValidation = require("../validations/charactersCreate");
 
-// characterCreate
-router.post("/create", characterCreate, create);
-router.get('/', index)
+//Create
+router.post("/create", charactersValidation, create);
+
+//List
+router.get('/', list);
+
+// update
+router.put('/update/:id', update);
+
+// delete
+
+router.delete('/delete/:id', remove);
+
+// detail
+
+router.get('/detail/:id', detail)
+
+// router.get('/characters?name', search);
 
 module.exports = router

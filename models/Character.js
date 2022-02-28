@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             Characters.belongsToMany(models.Movies, {
+                onDelete: 'cascade',
+                hooks: "true",
                 as: "Movies",
                 through: "Characters_movies",
                 foreignKey: "character_id",
@@ -32,5 +34,6 @@ module.exports = (sequelize, DataTypes) => {
         modelName: 'Characters',
         timestamps: false
     });
+
     return Characters;
 };
