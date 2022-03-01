@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Characters_movies',
-        timestamps: false
+        timestamps: false,
+        freezeTableName: true
     });
     return Characters_movies;
 };

@@ -32,7 +32,9 @@ module.exports = (sequelize, DataTypes) => {
     }, {
         sequelize,
         modelName: 'Characters',
-        timestamps: false
+        timestamps: false,
+        freezeTableName: true,
+        alias: "Characters"
     });
 
     return Characters;

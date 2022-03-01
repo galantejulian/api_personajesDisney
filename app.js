@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors')
 const characterRoutes = require("./router/characterRoutes")
+const movieRoutes = require("./router/movieRoutes")
 require('dotenv').config()
 
 
@@ -26,7 +27,7 @@ app.use(cors());
 
 // routes
 app.use('/characters', characterRoutes)
-
+app.use('/movies', movieRoutes)
 
 app.listen('3333', () => console.log('Servidor corriendo en el puerto 3'));
 
