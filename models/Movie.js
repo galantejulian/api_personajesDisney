@@ -22,6 +22,10 @@ module.exports = (sequelize, DataTypes) => {
                 otherKey: "character_id",
                 timestamps: false,
             });
+            Movies.belongsTo(models.Genres, {
+                as: "Genres",
+                foreignKey: "genre_id"
+            })
         }
     };
     Movies.init({

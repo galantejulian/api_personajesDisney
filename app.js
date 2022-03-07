@@ -6,6 +6,7 @@ const logger = require('morgan');
 const cors = require('cors')
 const characterRoutes = require("./router/characterRoutes")
 const movieRoutes = require("./router/movieRoutes")
+const authRoutes = require('./router/authRoutes')
 require('dotenv').config()
 
 
@@ -28,6 +29,7 @@ app.use(cors());
 // routes
 app.use('/characters', characterRoutes)
 app.use('/movies', movieRoutes)
+app.use('/auth', authRoutes)
 
 app.listen('3333', () => console.log('Servidor corriendo en el puerto 3'));
 

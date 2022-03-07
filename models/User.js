@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         password: DataTypes.INTEGER,
     }, {
         sequelize,
-        modelName: 'User',
+        modelName: 'Users',
         timestamps: false
     });
     return Users;

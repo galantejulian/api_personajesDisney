@@ -8,38 +8,45 @@ module.exports = {
     // ====All movies===
 
     list: async (req, res) => {
-        const movies = await db.Movies.findAll({
-            attributes: ['title', 'image_movie', 'release_date']
-
-        }).catch(error => console.log(error))
-        if (movies) {
-            return res.status(200).json({
+        try {
+            const movies = await db.Movies.findAll({
+                attributes: ['title', 'image_movie', 'release_date']
+            })
+            if (movies) {
+                return res.status(200).json({
+                    meta: {
+                        status: 200,
+                        ok: true,
+                    },
+                    data: movies,
+                });
+            }
+        } catch (error) {
+            res.status(400).json({
                 meta: {
-                    status: 200,
-                    ok: true,
+                    status: 400,
+                    ok: false
                 },
-                data: movies,
-            });
-        } else {
-            res.status(400).json(
-                { message: "error" })
+                data: error
+            })
         }
+
     },
 
     // =====DETAIL=====
 
     detail: async (req, res) => {
         try {
-            const characterFound = await db.Movies.findByPk(req.params.id, {
+            const movieFound = await db.Movies.findByPk(req.params.id, {
                 include: ["Characters"]
             })
-            if (characterFound) {
+            if (movieFound) {
                 return res.status(200).json({
                     meta: {
                         status: 200,
                         ok: true,
                     },
-                    data: characterFound,
+                    data: movieFound,
                 });
             } else {
                 return res.status(400).json({
@@ -47,7 +54,7 @@ module.exports = {
                         status: 400,
                         ok: false
                     },
-                    message: "there is no chacters matching with selected id"
+                    message: "there is no movie matching with selected id"
                 })
             }
         } catch (error) {
@@ -102,31 +109,43 @@ module.exports = {
     },
     // ========CREATE======
     create: async (req, res) => {
-        const { name, age, history, image, weight, title, image_movie, release_date, rating } = req.body;
+        try {
+            const { name, age, history, image, weight, title, image_movie, release_date, rating, name_genre } = req.body;
 
-        const movie = await db.Movies.create({
-            title,
-            image_movie,
-            release_date,
-            rating,
-            Characters: [{
-                name,
-                age,
-                history,
-                image,
-                weight,
-            }]
-        }, {
-            include: ['Characters']
-        }).catch(error => console.log(error))
+            const movie = await db.Movies.create({
+                title,
+                image_movie,
+                release_date,
+                rating,
+                Genres: [{
+                    name_genre,
+                }],
+                Characters: [{
+                    name,
+                    age,
+                    history,
+                    image,
+                    weight,
+                }]
+            }, {
+                include: ['Characters', 'Genres']
+            })
+            res.status(200).json({
+                meta: {
+                    status: 200,
+                    ok: true,
+                },
+                data: movie,
+            });
+        } catch (error) {
+            console.log(error)
+            res.status(400).json({
+                messege: error,
+                data: error
+            })
+        }
 
-        return res.status(200).json({
-            meta: {
-                status: 200,
-                ok: true,
-            },
-            data: movie,
-        });
+
     },
 
     // =====DELETE=====

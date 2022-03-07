@@ -7,11 +7,12 @@ const {
     remove
     // search
 } = require("../controllers/movies");
+const verifyToken = require("../middlewares/authJWT")
 const charactersValidation = require("../validations/charactersCreate");
-router.get('/', list)
-router.get('/detail/:id', detail)
-router.put('/update/:id', update)
-router.post('/create', create)
-router.delete('/:id', remove)
+router.get('/', verifyToken, list)
+router.get('/detail/:id', verifyToken, detail)
+router.put('/update/:id', verifyToken, update)
+router.post('/create', verifyToken, create)
+router.delete('/:id', verifyToken, remove)
 
 module.exports = router
