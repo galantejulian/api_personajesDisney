@@ -9,7 +9,7 @@ const createJWT = (email) => {
         }, (err, token) => {
             if (err) {
                 console.log(err);
-                reject('Was can not create the token');
+                reject('Can not create the token');
             } else {
                 resolve(token);
             }

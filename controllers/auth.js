@@ -8,7 +8,6 @@ module.exports = {
         try {
 
             const { email, password, name } = req.body;
-
             const errors = validationResult(req);
 
             if (!errors.isEmpty()) {

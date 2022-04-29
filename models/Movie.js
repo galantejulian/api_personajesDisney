@@ -21,10 +21,13 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: "movie_id",
                 otherKey: "character_id",
                 timestamps: false,
+                onUpdate: "cascade"
             });
             Movies.belongsTo(models.Genres, {
                 as: "Genres",
-                foreignKey: "genre_id"
+                foreignKey: "genre_id",
+                onDelete: 'cascade',
+                onUpdate: 'cascade'
             })
         }
     };

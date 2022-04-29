@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
                 through: "Characters_movies",
                 foreignKey: "character_id",
                 otherKey: "movie_id",
+                onUpdate: "cascade",
                 timestamps: false,
             });
         }

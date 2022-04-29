@@ -6,19 +6,20 @@ module.exports = {
 
     // ========CREATE======
     create: async (req, res) => {
-        const { name, age, history, image, weight, title, image_movie, release_date, rating } = req.body;
+        const { name, age, history, image, weight, title, image_movie, release_date, rating, genre_id } = req.body;
         const errors = validationResult(req);
 
+        // validations
         if (!errors.isEmpty()) {
             return res.status(404).json({
                 meta: {
                     status: 404,
                     ok: false,
+                    errors: errors.mapped()
                 },
-                errors: errors.mapped(),
             });
         }
-
+        // character creation including movies and genre of movie
         const character = await db.Characters.create({
             name,
             age,
@@ -29,38 +30,24 @@ module.exports = {
                 title,
                 image_movie,
                 release_date,
-                rating
+                rating,
+                genre_id
             }]
         }, {
-            include: ['Movies']
+            include: ['Movies', "Genres"]
         }).catch(error => console.log(error))
-
-        return res.status(200).json({
-            meta: {
-                status: 200,
-                ok: true,
-            },
-            data: character,
-        });
+        if (character) return res.status(200).json({ ok: true, data: character });
+        else return res.status(400).json({ ok: false, error: "Error creating character" });
     },
+
     // ========LIST======
 
     list: async (req, res) => {
         const characters = await db.Characters.findAll({
             attributes: ['name', 'image']
         })
-        if (characters) {
-            return res.status(200).json({
-                meta: {
-                    status: 200,
-                    ok: true,
-                },
-                data: characters,
-            });
-        } else {
-            res.status(400).json(
-                { message: "error" })
-        }
+        if (characters) return res.status(200).json({ ok: true, data: characters })
+        else return res.status(400).json({ ok: false, error: "Error getting characters" })
     },
 
     // =====UPDATE=====
@@ -75,40 +62,30 @@ module.exports = {
                 meta: {
                     status: 404,
                     ok: false,
+                    errors: errors.mapped()
                 },
-                errors: errors.mapped(),
             });
         }
-        const stateBefore = await db.Characters.findByPk(id); // Obtenemos el personaje antes de ser eliminado para enviarlo como información
-
-        await db.Characters.update(
-            // Actializamos los datos
+        // old values
+        const stateBefore = await db.Characters.findByPk(id);
+        // new values
+        const characterUpdated = await db.Characters.update(
             {
-                // Si no se cambia o se omite esta información recibe el valor que tenia antes
+                //    if there is no new value it will have the old one
                 name: name || stateBefore.name,
                 age: age || stateBefore.age,
                 history: history || stateBefore.history,
                 image: image || stateBefore.image,
                 weight: weight || stateBefore.weight
-            },
-            {
-                where: {
-                    id,
-                },
-            }
-        );
-
-        return res.status(201).json({
-            // Si esta todo ok! se envia la respuesta satifactoria con la información indicada abajo
-            meta: {
-                status: 201,
-                ok: true,
-            },
+            }, { where: { id, } });
+        if (characterUpdated) return res.status(201).json({
+            ok: true,
             data: {
-                characterUpdated: await db.Characters.findByPk(id), // Obtenemos el personaje actualizado y lo enviamos
-                characterBeforeUpdate: stateBefore, // Enviamos el personaje en el estado anterior
+                characterUpdated: await db.Characters.findByPk(id), // request db for the character updated
+                characterBeforeUpdate: stateBefore, // character before update
             },
         });
+
     },
 
     // =====DELETE=====
@@ -120,90 +97,57 @@ module.exports = {
             where: { id: req.params.id }
         })
 
-        if (deletedCharacter) {
-            return res.status(200).json(deletedCharacter)
-        } else {
-            return res.status(400).json({
-                message: "there is no Character matching with the chosen id",
-            })
-        }
+        if (deletedCharacter) return res.status(200).json({ ok: true, data: deletedCharacter })
+        else return res.status(400).json({ ok: false, message: "there is no Character matching with the chosen id", })
     },
     // =====DETAIL=====
 
     detail: async (req, res) => {
-        try {
-            const characterFound = await db.Characters.findByPk(req.params.id, {
-                include: [{
-                    association: "Movies",
-                    attributes: ['title'],
-                }]
+        const characterFound = await db.Characters.findByPk(req.params.id, {
+            include: ['Movies']
+        })
+        if (characterFound) return res.status(200).json({ ok: true, data: characterFound })
+        else return res.status(400).json({ ok: false, message: "there is no chacters matching with selected id" })
+    },
+    search: async (req, res) => {
+        let name = req.query.name
+        let age = req.query.age
+        let movies = req.query.movies
+
+        if (name) {
+            const characters = await db.Characters.findOne({
+                include: [
+                    { association: "Movies" }
+                ],
+                where: { name: name }
             })
-            if (characterFound) {
-                return res.status(200).json({
-                    meta: {
-                        status: 200,
-                        ok: true,
-                    },
-                    data: characterFound,
-                });
-            } else {
-                return res.status(400).json({
-                    meta: {
-                        status: 400,
-                        ok: false
-                    },
-                    message: "there is no chacters matching with selected id"
+            if (characters) return res.status(200).json({ ok: true, message: `El personaje encontrado es: ${characters.name}`, data: characters })
+            else return res.status(400).json("There are no characters with that name")
+        }
+        if (age) {
+            const characters = await db.Characters.findAll({
+                include: [
+                    { association: "Movies" }
+                ],
+                where: { age: age }
+            })
+            if (characters) return res.status(200).json({ ok: true, message: `La edad del personaje es ${age} `, data: characters })
+            else return res.status(400).json("there are no characters with that age")
+        }
+        if (movies) {
+            try {
+                const characters = await db.Movies.findOne({
+                    include: [
+                        { association: "Characters" }
+                    ],
+                    where: { id: movies }
                 })
+                if (characters) return res.status(200).json({ ok: true, data: characters })
+            } catch (error) {
+                console.log(error)
             }
-        } catch (error) {
-            console.log(error)
         }
 
-    },
-    // search: async (req, res) => {
-    //     const { name, age, movies } = req.query;
-    //     console.log(req.query)
+    }
 
-    //     if (name) {
-    //         const character = await db.Characters.findAll({
-    //             where: {
-    //                 name: {
-    //                     [Op.like]: `%{name}%`
-    //                 }
-    //             }
-    //         })
-
-    //     }
-    //     if (age) {
-    //         const character = await db.Characters.findAll({
-    //             where: {
-    //                 edad: {
-    //                     [Op.like]: "%" + edad + "%"
-    //                 }
-    //             }
-    //         })
-    //     }
-
-    //     if (movies) {
-    //         const character = await db.Characters.findAll({
-    //             include: ['Movies'],
-    //             where:
-    //             {
-    //                 [Op.like]: "%" + movies + "%"
-    //             }
-
-    //         })
-    //     }
-    //     if (!personaje.length) {
-    //         res.status(404).json({
-    //             message: "error, personaje no encotrada"
-    //         })
-    //     } else {
-    //         res.status(200).json({
-    //             message: 'personaje encontrado',
-    //             data: character
-    //         })
-    //     }
-    // }
 }
-
