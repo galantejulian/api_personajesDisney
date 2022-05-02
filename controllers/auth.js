@@ -3,19 +3,16 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const { transport } = require("../services/email");
 const { createJWT } = require("../helpers/createJWT");
+
 module.exports = {
     register: async (req, res) => {
         try {
-
             const { email, password, name } = req.body;
             const errors = validationResult(req);
 
             if (!errors.isEmpty()) {
-                res.status(404).json({
-                    meta: {
-                        status: 404,
-                        ok: false,
-                    },
+                res.status(409).json({
+                    ok: false,
                     errors: errors.mapped(),
                 });
             } else {
@@ -37,24 +34,13 @@ module.exports = {
                     `,
                 });
                 res.status(200).json({
-                    meta: {
-                        status: 200,
-                        ok: true,
-                        msg: "User created succesfully",
-                    },
+                    ok: true,
                     data: newUser,
                 });
-
             }
-
         } catch (error) {
-            console.log(error)
-            res.status(404).json({
-                meta: {
-                    status: 404,
-                    ok: false,
-                    msg: "an error ocurred"
-                },
+            res.status(500).json({
+                ok: false,
                 data: error,
             })
         }
@@ -70,7 +56,7 @@ module.exports = {
             if (!user) {
                 return res.status(404).json({
                     ok: false,
-                    msg: `email ${email} does not blong to any registered user exist`,
+                    msg: `email ${email} does not blong to any registered user`,
                 });
             }
 
@@ -93,16 +79,10 @@ module.exports = {
             });
         } catch (error) {
             console.log(error)
-            res.status(404).json({
-                meta: {
-                    status: 404,
-                    ok: false,
-                    msg: "an error ocurred"
-                },
+            res.status(500).json({
+                ok: false,
                 data: error,
             })
         }
     }
-
-
 }

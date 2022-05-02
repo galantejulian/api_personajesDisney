@@ -1,0 +1,46 @@
+openapi: 3.0.1
+info:
+  title: Delilah Resto
+  description: Backend API to explore the world of Disney.
+  contact:
+    email: galante.julian@gmail.com
+  version: 1.0.0
+externalDocs:
+  description: Github Repository
+  url: https://github.com/SaraMigoya/Challenge_Backend_alkemy
+servers:
+  - url: https://localhost:3000
+tags:
+  - name: Users
+    description: Operations about user
+  - name: Characters
+    description: Everything about characters
+  - name: Movies
+    description: Everything about movies
+  - name: Genders
+    description: Everything about genders
+paths:
+  /auth/register:
+    post:
+      tags:
+        - User
+      summary: Create user
+      description: Creates a new User in the DataBase
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      security: []
+      responses:
+        200:
+          description: User correctly added to database
+        400:
+          description: Error validating input data
+        409:
+          description: Username already exists, please pick another
+        default:
+          $ref: "#/components/responses/Default"

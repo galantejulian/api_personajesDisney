@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         }
     };
     Genres.init({
-        id_genre: DataTypes.STRING,
+        genre_id: DataTypes.INTEGER,
         name_genre: DataTypes.STRING,
         image_genre: DataTypes.STRING,
         rating: DataTypes.INTEGER,

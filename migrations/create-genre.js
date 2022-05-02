@@ -3,15 +3,15 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         await queryInterface.createTable('Genres', {
             id: {
-                allowNull: false,
-                autoIncrement: true,
+                type: Sequelize.INTEGER,
                 primaryKey: true,
-                type: Sequelize.INTEGER
+                autoIncrement: true,
+                allowNull: false,
             },
-            name: {
+            name_genre: {
                 type: Sequelize.STRING
             },
-            image: {
+            image_genre: {
                 type: Sequelize.STRING
             }
         });

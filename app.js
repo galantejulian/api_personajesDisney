@@ -31,6 +31,6 @@ app.use('/characters', characterRoutes)
 app.use('/movies', movieRoutes)
 app.use('/auth', authRoutes)
 
-app.listen('3333', () => console.log('Servidor corriendo en el puerto 3'));
+app.listen('3333', () => console.log('Servidor corriendo en el puerto 3333'));
 
 module.exports = app;
