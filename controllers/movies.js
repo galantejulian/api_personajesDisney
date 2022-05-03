@@ -136,7 +136,6 @@ module.exports = {
             await db.Movies.destroy({
                 where: { id: req.params.id }
             })
-            console.log(deletedMovie)
 
             if (deletedMovie) return res.status(200).json({ ok: true, data: deletedMovie, messege: "deleted movie succesfully" })
             else return res.status(400).json({ ok: false, message: "there is no Movie matching with the chosen id" })

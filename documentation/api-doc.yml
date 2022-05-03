@@ -1,46 +1,935 @@
 openapi: 3.0.1
 info:
-  title: Delilah Resto
+  title: Disney_api
   description: Backend API to explore the world of Disney.
   contact:
     email: galante.julian@gmail.com
   version: 1.0.0
 externalDocs:
   description: Github Repository
-  url: https://github.com/SaraMigoya/Challenge_Backend_alkemy
+  url: https://github.com/galantejulian/api_personajesDisney
 servers:
-  - url: https://localhost:3000
+  - url: http://localhost:3333
 tags:
-  - name: Users
-    description: Operations about user
+  - name: Authentication
+    description: Register and Login
   - name: Characters
     description: Everything about characters
   - name: Movies
     description: Everything about movies
-  - name: Genders
-    description: Everything about genders
 paths:
+  # AUTHENTICATION
+  # POST - REGISTER
   /auth/register:
     post:
+      description: Register a new user
       tags:
-        - User
-      summary: Create user
-      description: Creates a new User in the DataBase
-      operationId: createUser
+        - Authentication
       requestBody:
-        description: Created user object
+        description: User register
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
-        required: true
-      security: []
+              $ref: "#/components/schemas/Register"
       responses:
         200:
-          description: User correctly added to database
+          $ref: "#/components/responses/registerSuccessfully"
+
+        422:
+          $ref: "#/components/responses/registerValidationsErrors"
+
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  # POST - LOGIN
+  /auth/login:
+    post:
+      description: Logs user into the system
+      security: []
+      tags:
+        - Authentication
+      requestBody:
+        description: User login
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+
+      responses:
+        200:
+          $ref: "#/components/responses/loginSuccessfully"
+
         400:
-          description: Error validating input data
-        409:
-          description: Username already exists, please pick another
-        default:
-          $ref: "#/components/responses/Default"
+          $ref: "#/components/responses/loginPasswordError"
+
+        404:
+          $ref: "#/components/responses/loginUserNotFound"
+
+        500:
+          $ref: "#/components/responses/ServerError"
+  #GET - CHARACTERS
+  /characters:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Characters
+      summary: Get all characters or the one that matches with the query
+      description: Returns characters that match with the query
+      parameters:
+        - name: name
+          in: query
+          description: name of the character
+          schema:
+            type: string
+        - name: age
+          in: query
+          description: character with age
+          schema:
+            type: string
+        - name: movie_id
+          in: query
+          description: genre id of the movie
+          schema:
+            type: number
+      responses:
+        200:
+          $ref: "#/components/responses/AllCharactersSuccesfull"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        400:
+          $ref: "#/components/responses/Error"
+        500:
+          $ref: "#/components/responses/registerServerError"
+  #POST - CHARACTERS
+  /characters/create:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Characters
+      summary: "Will add a new character"
+      description: "add a new character to DB"
+      requestBody:
+        description: "request with values"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterPost"
+      responses:
+        200:
+          $ref: "#/components/responses/CharacterCreateSuccess"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        422:
+          $ref: "#/components/responses/CharacterValidationsErrors"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #PUT - CHARACTERS
+  /characters/update/{id}:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Characters
+      summary: "Update an existing character by provinding the correct id"
+      description: "this endpoint is in charge of making an update of the selected character"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the character that needs to be updated"
+          required: true
+          schema:
+            type: integer
+            example: 5
+      requestBody:
+        description: "character update"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterUpdate"
+      responses:
+        200:
+          $ref: "#/components/responses/UpdatedSuccessfully"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        422:
+          $ref: "#/components/responses/CharacterValidationsErrors"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #DELETE CHARACTER
+  /characters/delete/{id}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Characters
+      summary: "Delete character"
+      description: "This endpoint will delete the character that corresponds with the choosen id"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the character you want to delete"
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        200:
+          $ref: "#/components/responses/deletedSuccessfully"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #GET CHARACTER DETAIL
+  /characters/detail/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Characters
+      summary: "detail of one character"
+      description: "this endpoint is in charge of showing the detail of one character"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the character that needs to be shown"
+          required: true
+          schema:
+            type: integer
+            example: 5
+      responses:
+        200:
+          $ref: "#/components/responses/CharacterInfo"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #GET MOVIES
+  /movies:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Movies
+      summary: Get all movies or the one that matches with the query
+      description: Returns movies that match with the query
+      parameters:
+        - name: name
+          in: query
+          description: name of the movie
+          schema:
+            type: string
+        - name: genre
+          in: query
+          description: id of the genre
+          schema:
+            type: integer
+        - name: ASC DESC
+          in: query
+          description: order
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: "#/components/responses/AllMoviesSuccesfull"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/Error"
+        500:
+          $ref: "#/components/responses/registerServerError"
+  /movies/detail/{id}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Movies
+      summary: "Get information of the specified Movie"
+      description: "this endpoint is in charge of showing the information of the specified Movie"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the character that needs to be updated"
+          required: true
+          schema:
+            type: integer
+            example: 5
+      responses:
+        200:
+          $ref: "#/components/responses/MovieInfo"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        500:
+          $ref: "#/components/responses/ServerError"
+  /movies/create:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Movies
+      summary: "Will add a new movie"
+      description: "add a new movie to DB"
+      requestBody:
+        description: "request with values"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterPost"
+      responses:
+        200:
+          $ref: "#/components/responses/MovieInfo"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        422:
+          $ref: "#/components/responses/MovieValidationsErrors"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #PUT - CHARACTERS
+  /movies/update/{id}:
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Movies
+      summary: "Update an existing movie by provinding the correct id"
+      description: "this endpoint is in charge of making an update of the selected movie"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the movie that needs to be updated"
+          required: true
+          schema:
+            type: integer
+            example: 5
+      requestBody:
+        description: "movie update"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieUpdate"
+      responses:
+        200:
+          $ref: "#/components/responses/UpdatedSuccessfully"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        422:
+          $ref: "#/components/responses/MovieValidationsErrors"
+        500:
+          $ref: "#/components/responses/ServerError"
+  #DELETE Movie
+  /movies/delete/{id}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Movies
+      summary: "Delete movie"
+      description: "This endpoint will delete the movie that corresponds with the choosen id"
+      parameters:
+        - in: path
+          name: id
+          description: "the id of the character you want to delete"
+          required: true
+          schema:
+            type: integer
+            example: 6
+      responses:
+        200:
+          $ref: "#/components/responses/deletedSuccessfully"
+        401:
+          $ref: "#/components/responses/InvalidToken"
+        404:
+          $ref: "#/components/responses/IdNotFound"
+        500:
+          $ref: "#/components/responses/ServerError"
+
+  # COMPONENTS
+components:
+  # SCHEMAS!!! - request body
+  schemas:
+    Register:
+      properties:
+        email:
+          type: string
+          description: Enter your email
+          example: email@email.com
+        password:
+          description: Enter a password
+          type: string
+          example: 1234
+          format: password
+    Login:
+      properties:
+        email:
+          type: string
+          description: Enter email
+          example: galante.julian@gmail.com
+          format: email
+        password:
+          description: Enter password
+          type: string
+          example: 1234
+          format: password
+    #POST NEW CHARACTER
+    CharacterPost:
+      properties:
+        name:
+          type: string
+          example: Pumba
+        image:
+          type: string
+          example: https://via.placeholder.com/150
+        history:
+          type: string
+          example: he is always having fun
+        age:
+          type: integer
+          example: 50
+        weight:
+          type: integer
+          example: 50
+        title:
+          type: string
+          example: El rey leon
+        image_movie:
+          type: string
+          example: https://via.placeholder.com/150
+        release_date:
+          type: integer
+          example: 20-20-19
+        genre_id:
+          type: integer
+          example: 2
+    # PUT CHARACTER
+    CharacterUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Pumba"
+        age:
+          type: string
+          example: 20
+        history:
+          type: string
+          example: "lorem impsum"
+        weight:
+          type: integer
+          example: 80
+        image:
+          type: string
+          example: ttps://via.placeholder.com/150
+    #MOVIE UPDATE
+    MovieUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Pinocho"
+        image_movie:
+          type: string
+          example: http://placeimg.com/640/480/abstract
+        release_date:
+          type: integer
+          example: 19-15-21
+        rating:
+          type: integer
+          example: 5
+        genre_id:
+          type: integer
+          example: 3
+
+  #SECURITY
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # RESPONSES
+  responses:
+    # Verb POST ( Register - responses )
+    registerSuccessfully:
+      description: User registration success
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: string
+                example: true
+              data:
+                type: object
+                example:
+                  {
+                    id: 7,
+                    email: galante.julian@gmail.com,
+                    password: $2b$10$r1iykobY.Kz8Znv3fAl7BeZOuuB4t4BMRUuDGW8Gi4k64BIxV78wy,
+                  }
+
+    registerValidationsErrors:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  properties:
+                    msg:
+                      type: string
+                      example: Email cannot be empty
+                    param:
+                      type: string
+                      example: email
+                    location:
+                      type: string
+                      example: body
+
+    registerServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            type: object
+            example: { ok: false, message: server error }
+            properties:
+              message:
+                type: string
+
+    # Verb POST ( Login - responses )
+    loginSuccessfully:
+      description: Successful login
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              msg:
+                type: string
+                example: User logged in
+              token:
+                type: string
+                format: base64
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBydWViYTEyMzQ1QGdtYWlsLmNvbSIsImlhdCI6MTY0NTg3MjM3MCwiZXhwIjoxNjQ1ODg2NzcwfQ.A73ENdrNz0uJlIZI6SW5D6uvB1Za5YKfo_XQrBdNPCA
+
+    loginPasswordError:
+      description: Password is wrong
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: false
+              msg:
+                type: string
+                example: The password is wrong
+
+    loginUserNotFound:
+      description: User not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: false
+              msg:
+                type: string
+                example: email galantejulian@gmail.com does not blong to any registered user
+
+    ServerError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: string
+                example: false
+              data:
+                type: object
+                example: {}
+    # Verb GET (Characters - responses)
+    AllCharactersSuccesfull:
+      description: "it shows a list with all characters"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                example:
+                  [
+                    {
+                      "name": "Jepeto",
+                      "image": "http://placeimg.com/640/480/abstract",
+                    },
+                    {
+                      "name": "Pinocho",
+                      "image": "http://placeimg.com/640/480/abstract",
+                    },
+                  ]
+    InvalidToken:
+      description: "Incorrect auth"
+      content:
+        application/json:
+          schema:
+            type: string
+            example: "A token is required for authentication"
+    Error:
+      description: "Error getting info"
+      content:
+        application/json:
+          schema:
+            type: string
+            example: "there are no characters mathching with that query"
+
+    # Verb POST (New-Character - Responses)
+    CharacterCreateSuccess:
+      description: "Character created succesfuly"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 10
+                  name:
+                    type: string
+                    example: Timon
+                  age:
+                    type: integer
+                    example: 15
+                  history:
+                    type: string
+                    example: lorem ipsum
+                  weight:
+                    type: integer
+                    example: 50
+                  image:
+                    type: string
+                    example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+                  Movies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        title:
+                          type: string
+                          example: El rey leon
+    CharacterValidationsErrors:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  properties:
+                    msg:
+                      type: string
+                      example: Name cannot be empty
+                    param:
+                      type: string
+                      example: name
+                    location:
+                      type: string
+                      example: body
+    #VERB PUT (edit character - responses)
+    UpdatedSuccessfully:
+      description: "Character updated successfully"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  name:
+                    type: string
+                    example: Pumba
+                  age:
+                    type: integer
+                    example: 20
+                  history:
+                    type: string
+                    example: "lorem ipsum"
+                  weight:
+                    type: integer
+                    example: 80
+                  image:
+                    type: string
+                    example: "ttps://via.placeholder.com/150"
+    IdNotFound:
+      description: "Incorrect Id"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: false
+              msg:
+                type: string
+                example: "No matching Id"
+
+    #DELETE (delete character - responses)
+    deletedSuccessfully:
+      description: "Character deleted successfully"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  name:
+                    type: string
+                    example: Pumba
+                  age:
+                    type: integer
+                    example: 20
+                  history:
+                    type: string
+                    example: "lorem ipsum"
+                  weight:
+                    type: integer
+                    example: 80
+                  image:
+                    type: string
+                    example: "ttps://via.placeholder.com/150"
+    #GET {id} (character - responses)
+    CharacterInfo:
+      description: "Character info"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 10
+                  name:
+                    type: string
+                    example: Timon
+                  age:
+                    type: integer
+                    example: 15
+                  history:
+                    type: string
+                    example: lorem ipsum
+                  weight:
+                    type: integer
+                    example: 50
+                  image:
+                    type: string
+                    example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+                  Movies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        title:
+                          type: string
+                          example: El rey leon
+                        release_date:
+                          type: integer
+                          example: 20-20-19
+                        rating:
+                          type: integer
+                          example: 5
+                        genre_id:
+                          type: integer
+                          example: 2
+    AllMoviesSuccesfull:
+      description: "it shows a list with all characters"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 10
+                  title:
+                    type: string
+                    example: Pinocho
+                  rating:
+                    type: integer
+                    example: 5
+                  genre_id:
+                    type: integer
+                    example: 2
+                  image:
+                    type: string
+                    example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+                  Characters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        name:
+                          type: string
+                          example: Jepeto
+                        image:
+                          type: string
+                          example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+                        age:
+                          type: integer
+                          example: 30
+                        weight:
+                          type: integer
+                          example: 50
+                        history:
+                          type: string
+                          example: lorem ipsum
+    MovieInfo:
+      description: "Movie info"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+                example: true
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 10
+                  title:
+                    type: string
+                    example: Pinocho
+                  image:
+                    type: string
+                    example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+                  release_date:
+                    type: integer
+                    example: 10-10-21
+                  rating:
+                    type: integer
+                    example: 8
+                  genre_id:
+                    type: integer
+                    example: 2
+                  Characters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 5
+                        name:
+                          type: string
+                          example: Jepeto
+                        weight:
+                          type: integer
+                          example: 40
+                        age:
+                          type: integer
+                          example: 40
+                        history:
+                          type: string
+                          example: lorem ipsum
+                        image:
+                          type: string
+                          example: "https://tentulogo.com/wp-content/uploads/2017/09/disney-logo.jpg"
+    MovieValidationsErrors:
+      description: Validation errors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  properties:
+                    msg:
+                      type: string
+                      example: title cannot be empty
+                    param:
+                      type: string
+                      example: title
+                    location:
+                      type: string
+                      example: body
